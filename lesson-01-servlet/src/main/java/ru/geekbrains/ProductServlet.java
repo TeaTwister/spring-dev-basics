@@ -11,8 +11,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-@WebServlet(urlPatterns = "/product")
+@WebServlet(urlPatterns = "/product/*")
 public class ProductServlet extends HttpServlet {
 
     public static final String P_TR = "<tr>";
@@ -38,7 +40,30 @@ public class ProductServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        List<Product> products = new ArrayList<>();
         PrintWriter writer = resp.getWriter();
+        String pathInfo = req.getPathInfo();
+
+        if (pathInfo != null && pathInfo.length() > 1) {
+            Product product;
+            long id;
+            try {
+                id = Long.parseLong(pathInfo.substring(1));
+            } catch (NumberFormatException nfe) {
+                writer.println("<p>Not a number<p/>");
+                return;
+            }
+            product = productRepository.findById(id);
+            if (product != null) {
+                products.add(product);
+            } else {
+                writer.println("<p>No such product<p/>");
+                return;
+            }
+        } else {
+            products.addAll(productRepository.findAll());
+        }
+
         writer.println("<table>");
         writer.print(P_TR);
         writer.print("<th>Id</th>");
@@ -46,11 +71,11 @@ public class ProductServlet extends HttpServlet {
         writer.print("<th>Cost</th>");
         writer.println(P_TR_);
 
-        for (Product product : productRepository.findAll()) {
+        for (Product p : products) {
             writer.print(P_TR);
-            printTableItem(writer, product.getId());
-            printTableItem(writer, product.getTitle());
-            printTableItem(writer, product.getCost());
+            printTableItem(writer, p.getId());
+            printTableItem(writer, p.getTitle());
+            printTableItem(writer, p.getCost());
             writer.println(P_TR_);
         }
 
