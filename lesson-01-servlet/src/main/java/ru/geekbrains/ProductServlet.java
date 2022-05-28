@@ -50,6 +50,7 @@ public class ProductServlet extends HttpServlet {
             try {
                 id = Long.parseLong(pathInfo.substring(1));
             } catch (NumberFormatException nfe) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 writer.println("<p>Not a number<p/>");
                 return;
             }
@@ -57,6 +58,7 @@ public class ProductServlet extends HttpServlet {
             if (product != null) {
                 products.add(product);
             } else {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 writer.println("<p>No such product<p/>");
                 return;
             }
